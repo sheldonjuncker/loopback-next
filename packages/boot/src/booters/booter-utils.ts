@@ -50,7 +50,7 @@ export function isClass(target: any): target is Constructor<any> {
 export async function loadClassesFromFiles(
   files: string[],
   projectRootDir: string,
-): Constructor<{}>[] {
+): Promise<Constructor<{}>[]> {
   //Creates an importer which can import using either a dynamic import or require
   //depending on the node version and supported features
   //This can fail if the node version is below 9.7.x or the dynamic import feature isn't enabled
