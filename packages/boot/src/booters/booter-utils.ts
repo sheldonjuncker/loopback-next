@@ -51,10 +51,23 @@ export async function loadClassesFromFiles(
   files: string[],
   projectRootDir: string,
 ): Constructor<{}>[] {
+  //Creates an importer which can import using either a dynamic import or require
+  //depending on the node version and supported features
+  //This can fail if the node version is below 9.7.x or the dynamic import feature isn't enabled
+  let importFile = async (file: string) => {
+    try {
+      //Try to import in a way that supports ES6 modules
+      return await new Function('file', 'return import(file)');
+    } catch (e) {
+      //Fallback to require if dynamic import is not supported
+      return require(file);
+    }
+  };
+  
   const classes: Constructor<{}>[] = [];
   for (const file of files) {
     debug('Loading artifact file %j', path.relative(projectRootDir, file));
-    const moduleObj = await import(file);
+    const moduleObj = await importFile(file);
     for (const k in moduleObj) {
       const exported = moduleObj[k];
       if (isClass(exported)) {
