@@ -39,9 +39,12 @@ export function isClass(target: any): target is Constructor<any> {
 }
 
 /**
- * Returns an Array of Classes from given files. Works by requiring the file,
+ * Returns an Array of Classes from given files. Works by requiring/importing the file,
  * identifying the exports from the file by getting the keys of the file
  * and then testing each exported member to see if it's a class or not.
+ *
+ * This detects the support of dynamic imports and uses them if available
+ * as this allows ES6 modules to be imported.
  *
  * @param files - An array of string of absolute file paths
  * @param projectRootDir - The project root directory
@@ -52,18 +55,18 @@ export async function loadClassesFromFiles(
   projectRootDir: string,
 ): Promise<Constructor<{}>[]> {
   //Creates an importer which can import using either a dynamic import or require
-  //depending on the node version and supported features
-  //This can fail if the node version is below 9.7.x or the dynamic import feature isn't enabled
-  let importFile = async (file: string) => {
+  const importFile = async (file: string) => {
     try {
       //Try to import in a way that supports ES6 modules
-      return await new Function('file', 'return import(file)');
+      return await Promise.resolve(
+        new Function('file', 'return import(file)')(file),
+      );
     } catch (e) {
       //Fallback to require if dynamic import is not supported
       return require(file);
     }
   };
-  
+
   const classes: Constructor<{}>[] = [];
   for (const file of files) {
     debug('Loading artifact file %j', path.relative(projectRootDir, file));

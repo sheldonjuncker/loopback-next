@@ -85,7 +85,7 @@ describe('booter-utils unit tests', () => {
 
     it('throws an error given a non-existent file', async () => {
       const files = [resolve(sandbox.path, 'fake.artifact.js')];
-      expect(loadClassesFromFiles(files)).to.eventually.throw(
+      expect(loadClassesFromFiles(files, sandbox.path)).to.eventually.throw(
         /Error: Cannot find module/,
       );
     });
